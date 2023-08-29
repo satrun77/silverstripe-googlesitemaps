@@ -16,6 +16,7 @@ use Wilr\GoogleSitemaps\GoogleSitemap;
 use Wilr\GoogleSitemaps\Tests\Model\OtherDataObject;
 use Wilr\GoogleSitemaps\Tests\Model\TestDataObject;
 use Wilr\GoogleSitemaps\Tests\Model\UnviewableDataObject;
+use SilverStripe\ORM\FieldType\DBDatetime;
 
 class GoogleSitemapTest extends FunctionalTest
 {
@@ -107,6 +108,8 @@ class GoogleSitemapTest extends FunctionalTest
 
     public function testAccessingSitemapRootXMLFile(): void
     {
+        DBDatetime::set_mock_now('2023-02-13');
+
         GoogleSitemap::register_dataobject(TestDataObject::class);
         GoogleSitemap::register_dataobject(OtherDataObject::class);
 
@@ -114,6 +117,7 @@ class GoogleSitemapTest extends FunctionalTest
         $body = $response->getBody();
 
         $this->assertXmlStringEqualsXmlFile(__DIR__ . '/xml/' . __FUNCTION__ . '.xml', $body);
+        DBDatetime::clear_mock_now();
     }
 
     public function testLastModifiedDateOnRootXML(): void
@@ -149,16 +153,20 @@ class GoogleSitemapTest extends FunctionalTest
 
     public function testIndexFilePaginatedSitemapFiles(): void
     {
+        DBDatetime::set_mock_now('2023-02-13');
+
         $original = Config::inst()->get('GoogleSitemap', 'objects_per_sitemap');
         Config::inst()->set(GoogleSitemap::class, 'objects_per_sitemap', 1);
         GoogleSitemap::register_dataobject(TestDataObject::class);
 
         $response = $this->get('sitemap.xml');
         $body = $response->getBody();
+        $body = $response->getBody();
 
         $this->assertXmlStringEqualsXmlFile(__DIR__ . '/xml/' . __FUNCTION__ . '.xml', $body);
 
         Config::inst()->set(GoogleSitemap::class, 'objects_per_sitemap', $original);
+        DBDatetime::clear_mock_now();
     }
 
     public function testRegisterRoutesIncludesAllRoutes(): void
